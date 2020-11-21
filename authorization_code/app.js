@@ -99,7 +99,7 @@ app.get("/callback", function (req, res) {
           refresh_token = body.refresh_token;
 
         var optionsforGettingLikedSongs = {
-          url: "https://api.spotify.com/v1/me/tracks?offset=0&limit=41",
+          url: "https://api.spotify.com/v1/me/tracks?offset=0&limit=190",
           headers: { Authorization: "Bearer " + access_token },
           json: true,
         };
