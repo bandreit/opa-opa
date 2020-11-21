@@ -98,12 +98,6 @@ app.get("/callback", function (req, res) {
         var access_token = body.access_token,
           refresh_token = body.refresh_token;
 
-        var optionsforGettingLikedSongs = {
-          url: "https://api.spotify.com/v1/me/tracks?offset=0&limit=190",
-          headers: { Authorization: "Bearer " + access_token },
-          json: true,
-        };
-
         const formData = `{
           "name": "Zaibisi",
           "description": "Zaibisi Music",
@@ -127,34 +121,24 @@ app.get("/callback", function (req, res) {
         ) {
           const playlist_id = body.id;
 
-          request.get(optionsforGettingLikedSongs, function (
-            error,
-            response,
-            body
-          ) {
-            const tracks = body.items;
-            const track_uris = tracks.map((track) => track.track.uri);
-            const uris_for_req_first_half = track_uris.slice(0, 99).join(",");
-            const uris_for_req_second_half = track_uris
-              .slice(99, 198)
-              .join(",");
-
-            var optionsForAddingToPlaylist = {
-              url: `https://api.spotify.com/v1/playlists/${playlist_id}/tracks?uris=${uris_for_req_first_half}`,
-              headers: {
-                Authorization: "Bearer " + access_token,
-                ContentType: "application/json",
-              },
+          const addToPlaylist = (offset, limit) => {
+            const optionsforGettingLikedSongs = {
+              url: `https://api.spotify.com/v1/me/tracks?offset=${offset}&limit=${limit}`,
+              headers: { Authorization: "Bearer " + access_token },
               json: true,
             };
 
-            request.post(optionsForAddingToPlaylist, function (
+            request.get(optionsforGettingLikedSongs, function (
               error,
               response,
               body
             ) {
-              var optionsForAddingToPlaylist2 = {
-                url: `https://api.spotify.com/v1/playlists/${playlist_id}/tracks?uris=${uris_for_req_second_half}`,
+              const tracks = body.items;
+              const track_uris = tracks.map((track) => track.track.uri);
+              const uris_for_req_first_half = track_uris.slice(0, 99).join(",");
+
+              var optionsForAddingToPlaylist = {
+                url: `https://api.spotify.com/v1/playlists/${playlist_id}/tracks?uris=${uris_for_req_first_half}`,
                 headers: {
                   Authorization: "Bearer " + access_token,
                   ContentType: "application/json",
@@ -162,7 +146,7 @@ app.get("/callback", function (req, res) {
                 json: true,
               };
 
-              request.post(optionsForAddingToPlaylist2, function (
+              request.post(optionsForAddingToPlaylist, function (
                 error,
                 response,
                 body
@@ -170,7 +154,12 @@ app.get("/callback", function (req, res) {
                 console.log(response.body);
               });
             });
-          });
+          };
+
+          addToPlaylist(0, 50);
+          addToPlaylist(50, 50);
+          addToPlaylist(100, 50);
+          addToPlaylist(150, 40);
         });
 
         // we can also pass the token to the browser to make requests from there
